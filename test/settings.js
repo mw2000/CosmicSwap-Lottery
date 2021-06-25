@@ -46,7 +46,7 @@ const lotto = {
         }
     }, 
     chainLink: {
-        keyHash: "0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4",
+        keyHash: "0xc251acd21ec4fb7f31bb8868288bfdbaeb4fbfec2df3735ddbd4f7dc8d60103c",
         fee: ethers.utils.parseUnits("1", 19)
     },
     events: {

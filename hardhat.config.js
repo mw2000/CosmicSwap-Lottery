@@ -2,6 +2,10 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ethers");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
+require("dotenv");
+
+const {PRIVATE_KEY} = process.env;
+
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
@@ -20,6 +24,12 @@ module.exports = {
       blockGasLimit: 13000000,
       gasPrice: 20
     },
+    bsc_mainnet: {
+      url: "https://bsc-dataseed.binance.org/",
+      chainId: 56,
+      gasPrice: 20000000000,
+      accounts: [`0x${PRIVATE_KEY}`]
+    }
   },
   solidity: {
     compilers: [
