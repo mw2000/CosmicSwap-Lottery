@@ -32,8 +32,8 @@ contract Lottery is Ownable, Initializable, Testable {
     using Address for address;
 
     // State variables 
-    // Instance of Cake token (collateral currency for lotto)
-    IERC20 internal cake_;
+    // Instance of Cosmic token (collateral currency for lotto)
+    IERC20 internal cosmic_;
     // Storing of the NFT
     ILotteryNFT internal nft_;
     // Storing of the randomness generator 
@@ -67,8 +67,8 @@ contract Lottery is Ownable, Initializable, Testable {
     struct LottoInfo {
         uint256 lotteryID;          // ID for lotto
         Status lotteryStatus;       // Status for lotto
-        uint256 prizePoolInCake;    // The amount of cake for prize money
-        uint256 costPerTicket;      // Cost per ticket in $cake
+        uint256 prizePoolInCosmic;    // The amount of cosmic for prize money
+        uint256 costPerTicket;      // Cost per ticket in $cosmic
         uint8[] prizeDistribution;  // The distribution for prize money
         uint256 startingTimestamp;      // Block timestamp for star of lotto
         uint256 closingTimestamp;       // Block timestamp for end of entries
@@ -138,7 +138,7 @@ contract Lottery is Ownable, Initializable, Testable {
     //-------------------------------------------------------------------------
 
     constructor(
-        address _cake, 
+        address _cosmic, 
         address _timer,
         uint8 _sizeOfLotteryNumbers,
         uint16 _maxValidNumberRange,
@@ -166,7 +166,7 @@ contract Lottery is Ownable, Initializable, Testable {
             "Discounts must increase"
         );
         require(
-            _cake != address(0),
+            _cosmic != address(0),
             "Contracts cannot be 0 address"
         );
         require(
@@ -174,7 +174,7 @@ contract Lottery is Ownable, Initializable, Testable {
             _maxValidNumberRange != 0,
             "Lottery setup cannot be 0"
         );
-        cake_ = IERC20(_cake);
+        cosmic_ = IERC20(_cosmic);
         sizeOfLottery_ = _sizeOfLotteryNumbers;
         maxValidRange_ = _maxValidNumberRange;
         
@@ -379,7 +379,7 @@ contract Lottery is Ownable, Initializable, Testable {
      *          prize pool. I.e if a lotto has 5 numbers, the distribution could
      *          be [5, 10, 15, 20, 30] = 100%. This means if you get one number
      *          right you get 5% of the pool, 2 matching would be 10% and so on.
-     * @param   _prizePoolInCake The amount of Cake available to win in this 
+     * @param   _prizePoolInCosmic The amount of Cosmic available to win in this 
      *          lottery.
      * @param   _startingTimestamp The block timestamp for the beginning of the 
      *          lottery. 
@@ -389,7 +389,7 @@ contract Lottery is Ownable, Initializable, Testable {
      */
     function createNewLotto(
         uint8[] calldata _prizeDistribution,
-        uint256 _prizePoolInCake,
+        uint256 _prizePoolInCosmic,
         uint256 _costPerTicket,
         uint256 _startingTimestamp,
         uint256 _closingTimestamp
@@ -414,7 +414,7 @@ contract Lottery is Ownable, Initializable, Testable {
             "Prize distribution is not 100%"
         );
         require(
-            _prizePoolInCake != 0 && _costPerTicket != 0,
+            _prizePoolInCosmic != 0 && _costPerTicket != 0,
             "Prize or cost cannot be 0"
         );
         require(
@@ -436,7 +436,7 @@ contract Lottery is Ownable, Initializable, Testable {
         LottoInfo memory newLottery = LottoInfo(
             lotteryId,
             lotteryStatus,
-            _prizePoolInCake,
+            _prizePoolInCosmic,
             _costPerTicket,
             _prizeDistribution,
             _startingTimestamp,
@@ -452,8 +452,8 @@ contract Lottery is Ownable, Initializable, Testable {
         );
     }
 
-    function withdrawCake(uint256 _amount) external onlyOwner() {
-        cake_.transfer(
+    function withdrawCosmic(uint256 _amount) external onlyOwner() {
+        cosmic_.transfer(
             msg.sender, 
             _amount
         );
@@ -505,8 +505,8 @@ contract Lottery is Ownable, Initializable, Testable {
             uint256 discount, 
             uint256 costWithDiscount
         ) = this.costToBuyTicketsWithDiscount(_lotteryId, _numberOfTickets);
-        // Transfers the required cake to this contract
-        cake_.transferFrom(
+        // Transfers the required cosmic to this contract
+        cosmic_.transferFrom(
             msg.sender, 
             address(this), 
             costWithDiscount
@@ -562,9 +562,9 @@ contract Lottery is Ownable, Initializable, Testable {
             _lotteryId
         );
         // Removing the prize amount from the pool
-        allLotteries_[_lotteryId].prizePoolInCake = allLotteries_[_lotteryId].prizePoolInCake.sub(prizeAmount);
+        allLotteries_[_lotteryId].prizePoolInCosmic = allLotteries_[_lotteryId].prizePoolInCosmic.sub(prizeAmount);
         // Transfering the user their winnings
-        cake_.safeTransfer(address(msg.sender), prizeAmount);
+        cosmic_.safeTransfer(address(msg.sender), prizeAmount);
     }
 
     function batchClaimRewards(
@@ -619,11 +619,11 @@ contract Lottery is Ownable, Initializable, Testable {
                 _lotteryId
             );
             // Removing the prize amount from the pool
-            allLotteries_[_lotteryId].prizePoolInCake = allLotteries_[_lotteryId].prizePoolInCake.sub(prizeAmount);
+            allLotteries_[_lotteryId].prizePoolInCosmic = allLotteries_[_lotteryId].prizePoolInCosmic.sub(prizeAmount);
             totalPrize = totalPrize.add(prizeAmount);
         }
         // Transferring the user their winnings
-        cake_.safeTransfer(address(msg.sender), totalPrize);
+        cosmic_.safeTransfer(address(msg.sender), totalPrize);
     }
 
     //-------------------------------------------------------------------------
@@ -675,7 +675,7 @@ contract Lottery is Ownable, Initializable, Testable {
     /**
      * @param   _noOfMatching: The number of matching numbers the user has
      * @param   _lotteryId: The ID of the lottery the user is claiming on
-     * @return  uint256: The prize amount in cake the user is entitled to 
+     * @return  uint256: The prize amount in cosmic the user is entitled to 
      */
     function _prizeForMatching(
         uint8 _noOfMatching,
@@ -693,7 +693,7 @@ contract Lottery is Ownable, Initializable, Testable {
         // Getting the percentage of the pool the user has won
         uint256 perOfPool = allLotteries_[_lotteryId].prizeDistribution[_noOfMatching-1];
         // Timesing the percentage one by the pool
-        prize = allLotteries_[_lotteryId].prizePoolInCake.mul(perOfPool);
+        prize = allLotteries_[_lotteryId].prizePoolInCosmic.mul(perOfPool);
         // Returning the prize divided by 100 (as the prize distribution is scaled)
         return prize.div(100);
     }
